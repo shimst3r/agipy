@@ -7,6 +7,7 @@ environment you no longer need or want to purge artifacts a colleague left behin
 to help you dissolving your cloud problems.
 
 ## About the name
+
 `agipy` is a portmanteau of the chemical formula AgI for silver iodide and the word Python. Silver
 iodide is a chemical used for [cloud seeding](https://en.wikipedia.org/wiki/Cloud_seeding#Methodology)
 and [Python](https://www.python.org/) is the language `agipy` is implemented in.
