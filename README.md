@@ -1,5 +1,7 @@
 # agipy
 
+[![Build Status](https://travis-ci.org/shimst3r/agipy.svg?branch=master)](https://travis-ci.org/shimst3r/agipy)
+
 > /əˈdʒɪˈpaɪ/, portmanteau of AgI (chemical formula of silver iodide) and Python
 
 `agipy` enables you to destroy cloud infrastructure in a hurry. Whether you want to destroy a demo
