@@ -28,3 +28,16 @@ def test_import_agipy_module():
         assert False
     else:
         assert True
+
+
+def test_import_azure_provider():
+    """
+    test_import_azure_provider makes sure the azure provider module can be
+    imported properly.
+    """
+    try:
+        from agipy.providers import azure
+    except ImportError:
+        assert False
+    else:
+        assert True
