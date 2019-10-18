@@ -20,8 +20,8 @@ import os
 import sys
 
 import click
-from azure.common import credentials
-from azure.mgmt import resource
+from azure.common import credentials  # pylint: disable=no-name-in-module
+from azure.mgmt import resource  # pylint: disable=no-name-in-module
 from msrestazure.azure_exceptions import CloudError
 
 

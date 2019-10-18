@@ -10,6 +10,6 @@ install:
 
 script:
   - black --check agipy/
-  - mypy agipy/
+  - mypy --ignore-missing-imports agipy/
   - pylint --errors-only agipy/
   - pytest agipy/

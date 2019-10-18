@@ -20,7 +20,9 @@ import sys
 
 import click
 
-
+# pylint and Click do not work well together in all cases, see:
+# https://stackoverflow.com/questions/49680191/click-and-pylint
+# pylint: disable=no-value-for-parameter
 @click.command()
 @click.argument("provider", nargs=1, required=True)
 @click.option(
