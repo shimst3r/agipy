@@ -18,7 +18,7 @@ in my opinion that is an appropriate metaphor for deleting cloud infrastructure,
 alternatives that include "nukes" or "EMPs".
 
 [Python](https://www.python.org/) is the language `agipy` is implemented in. It is a great language for
-everything concerning cloud infrastructure and automisation, and it happens to be the language I feel most
+everything concerning cloud infrastructure and automation, and it happens to be the language I feel most
 comfortable with.
 
 ## How to use `agipy`
@@ -76,7 +76,7 @@ pytest agipy
 ## How to Contribute
 
 This project is released under the GPL license, so I am happy for contributions, forks, and feedback!
-This can be done on many ways:
+This can be done in many ways:
 
 * Open PRs with improvements,
 * add issues if you find bugs,
