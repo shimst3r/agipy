@@ -20,29 +20,19 @@ import sys
 
 import click
 
+from providers import azure
+
 # pylint and Click do not work well together in all cases, see:
 # https://stackoverflow.com/questions/49680191/click-and-pylint
 # pylint: disable=no-value-for-parameter
-@click.command()
-@click.argument("provider", nargs=1, required=True)
-@click.option(
-    "-p",
-    "--prefix",
-    required=True,
-    help="The prefix of resource groups you want to delete.",
-)
-def interface(provider, prefix):
+@click.group()
+def interface():
     """
-    interface is the entry point for the command line interface of agipy.
+    agipy enables you to destroy cloud infrastructure in a hurry
     """
-    if provider == "azure":
-        from agipy.providers import azure
 
-        prov = azure.AzureProvider()
-        prov.delete(prefix=prefix)
-    else:
-        click.echo(f"No provider package found for {provider}.")
-        sys.exit(1)
+
+interface.add_command(azure.azure)
 
 
 if __name__ == "__main__":

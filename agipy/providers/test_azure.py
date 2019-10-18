@@ -16,28 +16,32 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
+import os
 
-def test_import_agipy_module():
-    """
-    test_import_agipy_module makes sure the agipy module can be imported 
-    properly.
-    """
-    try:
-        import agipy
-    except ImportError:
-        assert False
-    else:
-        assert True
+import click.testing
+
+from . import azure
 
 
-def test_import_azure_provider():
-    """
-    test_import_azure_provider makes sure the azure provider module can be
-    imported properly.
-    """
-    try:
-        from agipy.providers import azure
-    except ImportError:
-        assert False
-    else:
-        assert True
+def test_azure_without_prefix():
+    expected = (
+        "Usage: azure [OPTIONS]\n"
+        'Try "azure --help" for help.\n'
+        "\n"
+        'Error: Missing option "--prefix".\n'
+    )
+
+    runner = click.testing.CliRunner()
+    actual = runner.invoke(azure.azure, args=[]).output
+
+    assert actual == expected
+
+
+def test_azure_without_environment_variables():
+    expected = "azure provider is missing the 'AZURE_CLIENT_ID'.\n"
+
+    runner = click.testing.CliRunner()
+    actual = runner.invoke(azure.azure, args=["--prefix=test"]).output
+
+    assert actual == expected
+

@@ -25,10 +25,38 @@ from azure.mgmt import resource  # pylint: disable=no-name-in-module
 from msrestazure.azure_exceptions import CloudError
 
 
+@click.command()
+@click.option("--prefix", required=True, help="Prefix of resource groups to delete.")
+@click.option("--client-id", required=False, help="Your Service Principal ID")
+@click.option("--client-secret", required=False, help="Your Service Principal Secret")
+@click.option("--subscription-id", required=False, help="Your Subscription ID")
+@click.option("--tenant-id", required=False, help="Your Tenant ID")
+def azure(prefix, client_id, client_secret, subscription_id, tenant_id):
+    """
+    azure is a command that lets you delete resource groups on
+    Microsoft Azure's public cloud infrastructure.
+    """
+
+    if client_id:
+        os.environ["AZURE_CLIENT_ID"] = client_id
+
+    if client_secret:
+        os.environ["AZURE_CLIENT_SECRET"] = client_secret
+
+    if subscription_id:
+        os.environ["AZURE_SUBSCRIPTION_ID"] = subscription_id
+
+    if tenant_id:
+        os.environ["AZURE_TENANT_ID"] = tenant_id
+
+    provider = AzureProvider()
+    provider.delete(prefix=prefix)
+
+
 class AzureProvider:
     """
-    AzureProvider implements functionality to delete resources and resource
-    groups on Microsoft Azure's public cloud infrastructure.
+    AzureProvider implements functionality to delete resource groups on
+    Microsoft Azure's public cloud infrastructure.
     """
 
     def __init__(self):
@@ -43,12 +71,10 @@ class AzureProvider:
 
     def delete(self, prefix: str):
         """
-        delete connects to the Azure public cloud and deletes all
-        resources and resource groups.
+        delete connects to the Azure public cloud and deletes all resources
+        in resource groups specified py prefix.
         """
-        if not prefix:
-            click.echo("Cannot delete resource groups without empty prefix.")
-            sys.exit(1)
+
         self._delete_resource_groups_by_prefix(prefix=prefix)
 
     def _setup_azure_client(self) -> resource.ResourceManagementClient:
@@ -62,7 +88,7 @@ class AzureProvider:
             subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
             tenant_id = os.environ["AZURE_TENANT_ID"]
         except KeyError as error:
-            click.echo(error)
+            click.echo(f"azure provider is missing the {error}.")
             sys.exit(1)
         else:
             cred = credentials.ServicePrincipalCredentials(
