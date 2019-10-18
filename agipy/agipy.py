@@ -34,7 +34,7 @@ def interface(provider, prefix):
     interface is the entry point for the command line interface of agipy.
     """
     if provider == "azure":
-        from providers import azure
+        from agipy.providers import azure
 
         prov = azure.AzureProvider()
         prov.delete(prefix=prefix)
