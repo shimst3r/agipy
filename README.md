@@ -56,8 +56,8 @@ pytest agipy
 
 ## How to Contribute
 
-This project is released under the GPL license because I opt for a wide acceptance rate. This also
-means that I am happy for contributions! This can be done on many ways:
+This project is released under the GPL license, so I am happy for contributions, forks, and feedback!
+This can be done on many ways:
 
 * Open PRs with improvements,
 * add issues if you find bugs,
@@ -79,7 +79,7 @@ New features must be covered by proper tests (idealy unit tests and functional t
 ## License
 
 > agipy enables you to destroy cloud infrastructure in a hurry.
-> Copyright (C) 2019  Nils Müller<shimst3r@gmail.com>
+> Copyright (C) 2019  Nils Müller <shimst3r@gmail.com>
 >
 > This program is free software: you can redistribute it and/or modify
 > it under the terms of the GNU General Public License as published by
