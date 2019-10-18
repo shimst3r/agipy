@@ -23,7 +23,7 @@ from setuptools import setup
 
 import m2r
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 ENTRY_POINTS = {"console_scripts": ["agipy = agipy.agipy:interface"]}
 
@@ -33,9 +33,12 @@ ENTRY_POINTS = {"console_scripts": ["agipy = agipy.agipy:interface"]}
 with open("README.md", "r", encoding="utf-8") as f_in:
     LONG_DESCRIPTION = m2r.convert(f_in.read())
 
-PACKAGES = ["agipy"]
+PACKAGES = ["agipy", "agipy.providers"]
 
-REQUIRES = ["azure", "Click"]
+REQUIRES = {
+    "azure": ["azure-common", "azure-mgmt-resource", "msrestazure"],
+    "general": ["Click"],
+}
 
 setup(
     author="Nils P. Müller",
@@ -51,7 +54,7 @@ setup(
     description="destroy cloud infrastructure in a hurry",
     download_url=f"https://github.com/shimst3r/agipy/archive/{__version__}.tar.gz",
     entry_points=ENTRY_POINTS,
-    install_requires=REQUIRES,
+    install_requires=[package for section in REQUIRES.values() for package in section],
     keywords=["azure", "cli", "cloud", "devops", "sysadmin", "tool"],
     license="GPL",
     long_description=LONG_DESCRIPTION,
