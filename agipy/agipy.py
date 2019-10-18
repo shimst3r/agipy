@@ -16,9 +16,32 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
+import sys
 
-def interface():
+import click
+
+
+@click.command()
+@click.argument("provider", nargs=1, required=True)
+@click.option(
+    "-p",
+    "--prefix",
+    required=True,
+    help="The prefix of resource groups you want to delete.",
+)
+def interface(provider, prefix):
     """
     interface is the entry point for the command line interface of agipy.
     """
-    pass
+    if provider == "azure":
+        from providers import azure
+
+        prov = azure.AzureProvider()
+        prov.delete(prefix=prefix)
+    else:
+        click.echo(f"No provider package found for {provider}.")
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    interface()
