@@ -23,6 +23,18 @@ comfortable with.
 
 ## How to use `agipy`
 
+`agipy` is available on [PyPI](https://pypi.org/project/agipy/), so you can install it using `pip`:
+
+```sh
+pip install --user agipy
+```
+
+In addition you can clone the repository and then install it from source via:
+
+```sh
+python3 setup.py install
+```
+
 To find out how the CLI works, use the built-in help function:
 
 ```sh
