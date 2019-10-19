@@ -45,3 +45,47 @@ def test_azure_without_environment_variables():
 
     assert actual == expected
 
+
+def test_azure_with_permutations_of_missing_environment_variables(subtests):
+    """
+    This test case verifies that the azure provider will not run when at least
+    one of the necessary environment variables is not set if called without
+    additional command line arguments.
+    """
+    setup_funs = {
+        (_set_client_id, "AZURE_CLIENT_ID"),
+        (_set_client_secret, "AZURE_CLIENT_SECRET"),
+        (_set_subscription_id, "AZURE_SUBSCRIPTION_ID"),
+        (_set_tenant_id, "AZURE_TENANT_ID"),
+    }
+
+    for fun, env in setup_funs:
+        with subtests.test(msg=f"Testing without {env} being set"):
+            for setup_fun, _ in setup_funs - {fun}:
+                setup_fun()
+
+            del os.environ[env]
+
+            expected = f"azure provider is missing the '{env}'.\n"
+
+            runner = click.testing.CliRunner()
+            actual = runner.invoke(azure.azure, args=["--prefix=test"]).output
+
+            assert actual == expected
+
+
+def _set_client_id():
+    os.environ["AZURE_CLIENT_ID"] = "Azure_Client_Id"
+
+
+def _set_client_secret():
+    os.environ["AZURE_CLIENT_SECRET"] = "Azure_Client_Secret"
+
+
+def _set_subscription_id():
+    os.environ["AZURE_SUBSCRIPTION_ID"] = "Azure_Subscription_Id"
+
+
+def _set_tenant_id():
+    os.environ["AZURE_TENANT_ID"] = "Azure_Tenant_Id"
+
