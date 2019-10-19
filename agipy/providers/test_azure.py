@@ -46,6 +46,18 @@ def test_azure_without_environment_variables():
     assert actual == expected
 
 
+def test_azure_with_environment_variables():
+    _set_client_id()
+    _set_client_secret()
+    _set_subscription_id()
+    _set_tenant_id()
+
+    runner = click.testing.CliRunner()
+    actual = runner.invoke(azure.azure, args=["--prefix=test"])
+
+    assert actual.exit_code == 0
+
+
 def test_azure_with_permutations_of_missing_environment_variables(subtests):
     """
     This test case verifies that the azure provider will not run when at least
