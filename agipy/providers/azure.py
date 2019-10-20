@@ -36,14 +36,25 @@ def azure(prefix, client_id, client_secret, subscription_id, tenant_id):
     azure is a command that lets you delete resource groups on
     Microsoft Azure's public cloud infrastructure.
     """
-
-    provider = AzureProvider(
-        client_id=client_id,
-        client_secret=client_secret,
-        subscription_id=subscription_id,
-        tenant_id=tenant_id,
-    )
-    provider.delete(prefix=prefix)
+    # The AzureProvider is initialised using a combination of environment
+    # variables and command line arguments.
+    # If either combination is not set properly, the process is exited.
+    try:
+        client_id = client_id or os.environ["AZURE_CLIENT_ID"]
+        client_secret = client_secret or os.environ["AZURE_CLIENT_SECRET"]
+        subscription_id = subscription_id or os.environ["AZURE_SUBSCRIPTION_ID"]
+        tenant_id = tenant_id or os.environ["AZURE_TENANT_ID"]
+    except KeyError as error:
+        click.echo(f"azure provider is missing the {error}.")
+        sys.exit(1)
+    else:
+        provider = AzureProvider(
+            client_id=client_id,
+            client_secret=client_secret,
+            subscription_id=subscription_id,
+            tenant_id=tenant_id,
+        )
+        provider.delete(prefix=prefix)
 
 
 class AzureProvider:
@@ -53,29 +64,12 @@ class AzureProvider:
     """
 
     def __init__(self, client_id, client_secret, subscription_id, tenant_id):
-        """
-        __init__ initialises the AzureProvider using a combination of environment
-        variables and command line arguments.
-
-        If any combination is not present in the call, a KeyError will be thrown.
-        """
-        try:
-            self.client_id = client_id or os.environ["AZURE_CLIENT_ID"]
-            self.client_secret = client_secret or os.environ["AZURE_CLIENT_SECRET"]
-            self.subscription_id = (
-                subscription_id or os.environ["AZURE_SUBSCRIPTION_ID"]
-            )
-            self.tenant_id = tenant_id or os.environ["AZURE_TENANT_ID"]
-        except KeyError as error:
-            click.echo(f"azure provider is missing the {error}.")
-            sys.exit(1)
-        else:
-            _credentials = credentials.ServicePrincipalCredentials(
-                client_id=client_id, secret=client_secret, tenant=tenant_id
-            )
-            self.client = resource.ResourceManagementClient(
-                credentials=_credentials, subscription_id=subscription_id
-            )
+        _credentials = credentials.ServicePrincipalCredentials(
+            client_id=client_id, secret=client_secret, tenant=tenant_id
+        )
+        self.client = resource.ResourceManagementClient(
+            credentials=_credentials, subscription_id=subscription_id
+        )
 
     @property
     def resource_groups(self):
