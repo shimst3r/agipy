@@ -16,14 +16,18 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
+# Most of the test cases in this test suite are about testing to import
+# submodules that will not be used.
+# pylint: disable=import-outside-toplevel, unused-import
+
 
 def test_import_agipy_module():
     """
-    test_import_agipy_module makes sure the agipy module can be imported 
+    test_import_agipy_module makes sure the agipy module can be imported
     properly.
     """
     try:
-        from agipy import agipy
+        import agipy
     except ImportError:
         assert False
     else:

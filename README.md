@@ -58,10 +58,12 @@ For using the provider, you have to set the following environment variables:
 * `AZURE_SUBSCRIPTION_ID`
 * `AZURE_TENANT_ID`
 
-Then you can call the provider via:
+Alternatively you can provide any of these values via command line arguments, see below.
+
+You can call the provider via:
 
 ```sh
-agipy azure --prefix=${RG_PREFIX}
+agipy azure --prefix=${RG_PREFIX} [--client-id=${AZURE_CLIENT_ID}] [--client-secret=${AZURE_CLIENT_SECRET}] [--subscription-id=${AZURE_SUBSCRIPTION_ID}] [--tenant-id=${AZURE_TENANT_ID}]
 ```
 
 ## How to Test
@@ -72,6 +74,8 @@ discovery can be used via
 ```sh
 pytest agipy
 ```
+
+In order to keep the tests clean and run smoothly, I try to use subtests and patches where possible.
 
 ## How to Contribute
 
