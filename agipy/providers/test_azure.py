@@ -24,6 +24,12 @@ import click.testing
 
 from . import azure
 
+# Some of the test cases use patching for mocking third party dependencies.
+# Because the unittest.mock.patch function expects those patched objects to
+# be present as (then unused) function arguments, this pylint warning will
+# be disabled.
+# pylint: disable=unused-argument
+
 EnvironmentVariable = namedtuple("EnvironmentVariable", ["env", "arg", "value"])
 
 ENV_VARS = [
@@ -39,6 +45,10 @@ ENV_VARS = [
 
 
 def test_azure_without_prefix():
+    """
+    This test case verifies that the azure provider will not run when no
+    prefix argument is provided.
+    """
     expected_exit_code = 2
     expected_output = (
         "Usage: azure [OPTIONS]\n"
@@ -57,6 +67,10 @@ def test_azure_without_prefix():
 
 
 def test_azure_without_environment_variables():
+    """
+    This test case verifies that the azure provider will not run when the
+    necessary environment variables are not set.
+    """
     expected_exit_code = 1
     expected_output = "azure provider is missing the 'AZURE_CLIENT_ID'.\n"
 
@@ -69,7 +83,7 @@ def test_azure_without_environment_variables():
 
 @patch("azure.common.credentials.ServicePrincipalCredentials")
 @patch("azure.mgmt.resource.ResourceManagementClient")
-def test_azure_with_prefix_and_environment_variables(credentials, client):
+def test_azure_with_prefix_and_environment_variables(cred, client):
     """
     This test case verifies that the azure provider will run properly if all
     necessary environment variables are set.
@@ -114,7 +128,7 @@ def test_azure_with_permutations_of_missing_environment_variables(subtests):
 
 @patch("azure.common.credentials.ServicePrincipalCredentials")
 @patch("azure.mgmt.resource.ResourceManagementClient")
-def test_azure_with_prefix_and_command_line_arguments(credentials, client):
+def test_azure_with_prefix_and_command_line_arguments(cred, client):
     """
     This test case verifies that the azure provider will run properly if all
     necessary command line arguments are provided.
@@ -159,9 +173,7 @@ def test_azure_without_env_vars_and_permutations_of_missing_arguments(subtests):
 
 @patch("azure.common.credentials.ServicePrincipalCredentials")
 @patch("azure.mgmt.resource.ResourceManagementClient")
-def test_azure_with_one_missing_env_var_and_related_argument(
-    credentials, client, subtests
-):
+def test_azure_with_one_missing_env_var_and_related_argument(cred, client, subtests):
     """
     This test case verifies that the azure provider will run properly if all
     but one environment variable is set and the missing value is provided

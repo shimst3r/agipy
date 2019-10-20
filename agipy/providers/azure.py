@@ -60,7 +60,7 @@ class AzureProvider:
     """
 
     def __init__(self):
-        self.client = self._setup_azure_client()
+        self.client = _setup_azure_client()
 
     @property
     def resource_groups(self):
@@ -76,29 +76,6 @@ class AzureProvider:
         """
 
         self._delete_resource_groups_by_prefix(prefix=prefix)
-
-    def _setup_azure_client(self) -> resource.ResourceManagementClient:
-        """
-        _setup_azure_client creates a ResourceManagementClient based on the
-        environment variables.
-        """
-        try:
-            client_id = os.environ["AZURE_CLIENT_ID"]
-            client_secret = os.environ["AZURE_CLIENT_SECRET"]
-            subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
-            tenant_id = os.environ["AZURE_TENANT_ID"]
-        except KeyError as error:
-            click.echo(f"azure provider is missing the {error}.")
-            sys.exit(1)
-        else:
-            cred = credentials.ServicePrincipalCredentials(
-                client_id=client_id, secret=client_secret, tenant=tenant_id
-            )
-            client = resource.ResourceManagementClient(
-                credentials=cred, subscription_id=subscription_id
-            )
-
-            return client
 
     def _delete_resource_group_by_name(self, rg_name: str):
         """
@@ -137,3 +114,27 @@ class AzureProvider:
         click.echo(
             f"Succesfully deleted {len(deletables)} resource groups for prefix {prefix}."
         )
+
+
+def _setup_azure_client() -> resource.ResourceManagementClient:
+    """
+    _setup_azure_client creates a ResourceManagementClient based on the
+    environment variables.
+    """
+    try:
+        client_id = os.environ["AZURE_CLIENT_ID"]
+        client_secret = os.environ["AZURE_CLIENT_SECRET"]
+        subscription_id = os.environ["AZURE_SUBSCRIPTION_ID"]
+        tenant_id = os.environ["AZURE_TENANT_ID"]
+    except KeyError as error:
+        click.echo(f"azure provider is missing the {error}.")
+        sys.exit(1)
+    else:
+        cred = credentials.ServicePrincipalCredentials(
+            client_id=client_id, secret=client_secret, tenant=tenant_id
+        )
+        client = resource.ResourceManagementClient(
+            credentials=cred, subscription_id=subscription_id
+        )
+
+        return client
