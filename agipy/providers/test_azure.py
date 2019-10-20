@@ -17,45 +17,77 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 
 import os
+from collections import namedtuple
+from unittest.mock import patch
 
 import click.testing
 
 from . import azure
 
+EnvironmentVariable = namedtuple("EnvironmentVariable", ["env", "arg", "value"])
+
+ENV_VARS = [
+    EnvironmentVariable("AZURE_CLIENT_ID", "--client-id", "Azure_Client_Id"),
+    EnvironmentVariable(
+        "AZURE_CLIENT_SECRET", "--client-secret", "Azure_Client_Secret"
+    ),
+    EnvironmentVariable(
+        "AZURE_SUBSCRIPTION_ID", "--subscription-id", "Azure_Subscription_Id"
+    ),
+    EnvironmentVariable("AZURE_TENANT_ID", "--tenant-id", "Azure_Tenant_Id"),
+]
+
 
 def test_azure_without_prefix():
-    expected = (
+    expected_exit_code = 2
+    expected_output = (
         "Usage: azure [OPTIONS]\n"
         'Try "azure --help" for help.\n'
         "\n"
         'Error: Missing option "--prefix".\n'
     )
 
-    runner = click.testing.CliRunner()
-    actual = runner.invoke(azure.azure, args=[]).output
+    args = []
 
-    assert actual == expected
+    runner = click.testing.CliRunner()
+    actual = runner.invoke(azure.azure, args=args)
+
+    assert actual.exit_code == expected_exit_code
+    assert actual.output == expected_output
 
 
 def test_azure_without_environment_variables():
-    expected = "azure provider is missing the 'AZURE_CLIENT_ID'.\n"
-
-    runner = click.testing.CliRunner()
-    actual = runner.invoke(azure.azure, args=["--prefix=test"]).output
-
-    assert actual == expected
-
-
-def test_azure_with_environment_variables():
-    _set_client_id()
-    _set_client_secret()
-    _set_subscription_id()
-    _set_tenant_id()
+    expected_exit_code = 1
+    expected_output = "azure provider is missing the 'AZURE_CLIENT_ID'.\n"
 
     runner = click.testing.CliRunner()
     actual = runner.invoke(azure.azure, args=["--prefix=test"])
 
-    assert actual.exit_code == 0
+    assert actual.exit_code == expected_exit_code
+    assert actual.output == expected_output
+
+
+@patch("azure.common.credentials.ServicePrincipalCredentials")
+@patch("azure.mgmt.resource.ResourceManagementClient")
+def test_azure_with_prefix_and_environment_variables(credentials, client):
+    """
+    This test case verifies that the azure provider will run properly if all
+    necessary environment variables are set.
+
+    In order to avoid calls to the Microsoft Azure API, both external
+    dependencies are patched as mock objects.
+    """
+    expected_exit_code = 0
+    expected_output = f"Found no deletable resource groups for prefix test.\n"
+
+    args = ["--prefix=test"]
+
+    with patch.dict(os.environ, {env.env: env.value for env in ENV_VARS}):
+        runner = click.testing.CliRunner()
+        actual = runner.invoke(azure.azure, args=args)
+
+        assert actual.exit_code == expected_exit_code
+        assert actual.output == expected_output
 
 
 def test_azure_with_permutations_of_missing_environment_variables(subtests):
@@ -64,40 +96,92 @@ def test_azure_with_permutations_of_missing_environment_variables(subtests):
     one of the necessary environment variables is not set if called without
     additional command line arguments.
     """
-    setup_funs = {
-        (_set_client_id, "AZURE_CLIENT_ID"),
-        (_set_client_secret, "AZURE_CLIENT_SECRET"),
-        (_set_subscription_id, "AZURE_SUBSCRIPTION_ID"),
-        (_set_tenant_id, "AZURE_TENANT_ID"),
-    }
+    for env_var in ENV_VARS:
+        expected_exit_code = 1
+        expected_output = f"azure provider is missing the '{env_var.env}'.\n"
 
-    for fun, env in setup_funs:
-        with subtests.test(msg=f"Testing without {env} being set"):
-            for setup_fun, _ in setup_funs - {fun}:
-                setup_fun()
+        args = ["--prefix=test"]
+        subset = {var.env: var.value for var in ENV_VARS if var != env_var}
 
-            del os.environ[env]
+        with patch.dict(os.environ, subset):
+            runner = click.testing.CliRunner()
+            actual = runner.invoke(azure.azure, args=args)
 
-            expected = f"azure provider is missing the '{env}'.\n"
+            with subtests.test(msg=f"Testing without {env_var} being set"):
+                assert actual.exit_code == expected_exit_code
+                assert actual.output == expected_output
+
+
+@patch("azure.common.credentials.ServicePrincipalCredentials")
+@patch("azure.mgmt.resource.ResourceManagementClient")
+def test_azure_with_prefix_and_command_line_arguments(credentials, client):
+    """
+    This test case verifies that the azure provider will run properly if all
+    necessary command line arguments are provided.
+
+    In order to avoid calls to the Microsoft Azure API, both external
+    dependencies are patched as mock objects.
+    """
+    expected_exit_code = 0
+    expected_output = f"Found no deletable resource groups for prefix test.\n"
+
+    args = ["--prefix=test"] + [f"{env.arg}={env.value}" for env in ENV_VARS]
+
+    with patch.dict(os.environ, {}):
+        runner = click.testing.CliRunner()
+        actual = runner.invoke(azure.azure, args=args)
+
+        assert actual.exit_code == expected_exit_code
+        assert actual.output == expected_output
+
+
+def test_azure_without_env_vars_and_permutations_of_missing_arguments(subtests):
+    """
+    This test case verifies that the azure provider will not run when the
+    necessary environment variables are not set and at least one of the
+    necessary command line arguments is not provided.
+    """
+    for env_var in ENV_VARS:
+        with patch.dict(os.environ, {}):
+            expected_exit_code = 1
+            expected_output = f"azure provider is missing the '{env_var.env}'.\n"
+
+            subset = {var.arg: var.value for var in ENV_VARS if var != env_var}
+            args = ["--prefix=test"] + [f"{k}={v}" for k, v in subset.items()]
 
             runner = click.testing.CliRunner()
-            actual = runner.invoke(azure.azure, args=["--prefix=test"]).output
+            actual = runner.invoke(azure.azure, args=args)
 
-            assert actual == expected
-
-
-def _set_client_id():
-    os.environ["AZURE_CLIENT_ID"] = "Azure_Client_Id"
+            with subtests.test(msg=f"Testing without {env_var} being set"):
+                assert actual.exit_code == expected_exit_code
+                assert actual.output == expected_output
 
 
-def _set_client_secret():
-    os.environ["AZURE_CLIENT_SECRET"] = "Azure_Client_Secret"
+@patch("azure.common.credentials.ServicePrincipalCredentials")
+@patch("azure.mgmt.resource.ResourceManagementClient")
+def test_azure_with_one_missing_env_var_and_related_argument(
+    credentials, client, subtests
+):
+    """
+    This test case verifies that the azure provider will run properly if all
+    but one environment variable is set and the missing value is provided
+    as command line argument.
 
+    In order to avoid calls to the Microsoft Azure API, both external
+    dependencies are patched as mock objects.
+    """
+    for env_var in ENV_VARS:
+        subset = {env.env: env.value for env in ENV_VARS if env != env_var}
 
-def _set_subscription_id():
-    os.environ["AZURE_SUBSCRIPTION_ID"] = "Azure_Subscription_Id"
+        with patch.dict(os.environ, subset):
+            expected_exit_code = 0
+            expected_output = f"Found no deletable resource groups for prefix test.\n"
 
+            args = ["--prefix=test", f"{env_var.arg}={env_var.value}"]
 
-def _set_tenant_id():
-    os.environ["AZURE_TENANT_ID"] = "Azure_Tenant_Id"
+            runner = click.testing.CliRunner()
+            actual = runner.invoke(azure.azure, args=args)
 
+            with subtests.test(msg=f"Testing with {env_var} being set as argument"):
+                assert actual.exit_code == expected_exit_code
+                assert actual.output == expected_output
