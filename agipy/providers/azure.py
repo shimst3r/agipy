@@ -31,6 +31,9 @@ from msrestazure.azure_exceptions import CloudError
 @click.option("--client-secret", required=False, help="Your Service Principal Secret")
 @click.option("--subscription-id", required=False, help="Your Subscription ID")
 @click.option("--tenant-id", required=False, help="Your Tenant ID")
+@click.confirmation_option(
+    prompt="Are you sure you want to delete all resource groups?"
+)
 def azure(prefix, client_id, client_secret, subscription_id, tenant_id):
     """
     azure is a command that lets you delete resource groups on
@@ -54,7 +57,8 @@ def azure(prefix, client_id, client_secret, subscription_id, tenant_id):
             subscription_id=subscription_id,
             tenant_id=tenant_id,
         )
-        provider.delete(prefix=prefix)
+
+    provider.delete(prefix=prefix)
 
 
 class AzureProvider:
