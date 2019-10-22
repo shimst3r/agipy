@@ -57,7 +57,7 @@ def test_azure_without_prefix():
         'Error: Missing option "--prefix".\n'
     )
 
-    args = []
+    args = ["--yes"]
 
     runner = click.testing.CliRunner()
     actual = runner.invoke(azure.azure, args=args)
@@ -74,8 +74,10 @@ def test_azure_without_environment_variables():
     expected_exit_code = 1
     expected_output = "azure provider is missing the 'AZURE_CLIENT_ID'.\n"
 
+    args = ["--prefix=test", "--yes"]
+
     runner = click.testing.CliRunner()
-    actual = runner.invoke(azure.azure, args=["--prefix=test"])
+    actual = runner.invoke(azure.azure, args=args)
 
     assert actual.exit_code == expected_exit_code
     assert actual.output == expected_output
@@ -94,7 +96,7 @@ def test_azure_with_prefix_and_environment_variables(cred, client):
     expected_exit_code = 0
     expected_output = f"Found no deletable resource groups for prefix test.\n"
 
-    args = ["--prefix=test"]
+    args = ["--prefix=test", "--yes"]
 
     with patch.dict(os.environ, {env.env: env.value for env in ENV_VARS}):
         runner = click.testing.CliRunner()
@@ -114,7 +116,7 @@ def test_azure_with_permutations_of_missing_environment_variables(subtests):
         expected_exit_code = 1
         expected_output = f"azure provider is missing the '{env_var.env}'.\n"
 
-        args = ["--prefix=test"]
+        args = ["--prefix=test", "--yes"]
         subset = {var.env: var.value for var in ENV_VARS if var != env_var}
 
         with patch.dict(os.environ, subset):
@@ -139,7 +141,9 @@ def test_azure_with_prefix_and_command_line_arguments(cred, client):
     expected_exit_code = 0
     expected_output = f"Found no deletable resource groups for prefix test.\n"
 
-    args = ["--prefix=test"] + [f"{env.arg}={env.value}" for env in ENV_VARS]
+    args = (
+        ["--prefix=test"] + [f"{env.arg}={env.value}" for env in ENV_VARS] + ["--yes"]
+    )
 
     with patch.dict(os.environ, {}):
         runner = click.testing.CliRunner()
@@ -161,7 +165,9 @@ def test_azure_without_env_vars_and_permutations_of_missing_arguments(subtests):
             expected_output = f"azure provider is missing the '{env_var.env}'.\n"
 
             subset = {var.arg: var.value for var in ENV_VARS if var != env_var}
-            args = ["--prefix=test"] + [f"{k}={v}" for k, v in subset.items()]
+            args = (
+                ["--prefix=test"] + [f"{k}={v}" for k, v in subset.items()] + ["--yes"]
+            )
 
             runner = click.testing.CliRunner()
             actual = runner.invoke(azure.azure, args=args)
@@ -189,7 +195,7 @@ def test_azure_with_one_missing_env_var_and_related_argument(cred, client, subte
             expected_exit_code = 0
             expected_output = f"Found no deletable resource groups for prefix test.\n"
 
-            args = ["--prefix=test", f"{env_var.arg}={env_var.value}"]
+            args = ["--prefix=test", f"{env_var.arg}={env_var.value}", "--yes"]
 
             runner = click.testing.CliRunner()
             actual = runner.invoke(azure.azure, args=args)
@@ -197,3 +203,4 @@ def test_azure_with_one_missing_env_var_and_related_argument(cred, client, subte
             with subtests.test(msg=f"Testing with {env_var} being set as argument"):
                 assert actual.exit_code == expected_exit_code
                 assert actual.output == expected_output
+
