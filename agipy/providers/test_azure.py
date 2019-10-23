@@ -203,4 +203,3 @@ def test_azure_with_one_missing_env_var_and_related_argument(cred, client, subte
             with subtests.test(msg=f"Testing with {env_var} being set as argument"):
                 assert actual.exit_code == expected_exit_code
                 assert actual.output == expected_output
-

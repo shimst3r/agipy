@@ -17,7 +17,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>
 """
 import click
 
-from providers import azure
+from .providers import azure
 
 # pylint and Click do not work well together in all cases, see:
 # https://stackoverflow.com/questions/49680191/click-and-pylint
